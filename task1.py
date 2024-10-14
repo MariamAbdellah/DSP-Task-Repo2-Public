@@ -21,43 +21,19 @@ def read_signals(file_path):
             values.append(value)
     return indices, values
 
-#<<<<<<< HEAD
 
 
-def read_file(path):
-    file = open(path, 'r')
-
-    f = file.readlines()
-    n = int(f[0].strip())
-
-    indexes = []
-    freqs = []
-
-    for i in range(1, n+1):
-        index = int(f[i].strip().split()[0])
-        freq = float(f[i].strip().split()[1])
-
-        indexes.append(index)
-        freqs.append(freq)
-
-    return indexes, freqs
-
-def vis(x, y):
-    plt.figure('fig1')
-    plt.plot(x, y, marker = 'o')
-    plt.xlabel('Index')
-    plt.ylabel('Frequency')
-    plt.grid()
-#=======
-def plot_signal(indices, values, label):
+def plot_signal(og_indices, og_values, res_indices, res_values, label):
     # Plot the signal
-    plt.plot(indices, values, marker='o', linestyle='-', label=label)
+    if (og_values and og_indices):
+        plt.plot(og_indices, og_values, marker='o', linestyle='-', label = "Original Signal")
+    if (res_values and res_indices):
+        plt.plot(res_indices, res_values, marker='x', linestyle='--',label=label)
     plt.xlabel("Sample Index")
     plt.ylabel("Amplitude")
     plt.grid(True)
     plt.legend()
-    plt.title(label)
-#>>>>>>> afe4a32d3981af9d20a4c2b652166300c558c05a
+    plt.title("Original and " + label)
     plt.show()
 def add_signals(signal1, signal2):
     # Extract indices and values from the signal lists
@@ -79,40 +55,34 @@ def add_signals(signal1, signal2):
 
 
 
-# #<<<<<<< HEAD
-# indexes, freqs = read_file("signal1.txt")
-# vis(indexes, freqs)
-# #=======
 def sub_signals(signal1, signal2):
-
-    # for i in signal2[0]:
-    #     signal2[1] = signal2[1] * (-1)
 
     values2 = signal2[1]
     values2 = [-value for value in values2]
-    signal2 = (signal2[0], values2)
+    #signal2 = (signal2[0], values2)
 
-    indices, values = add_signals(signal1, signal2)
+    indices, values = add_signals(signal1, (signal2[0], values2))
     return indices , values
-
 
 
 
 def delay_advancing_signals(signal1, constant):
     indices = signal1[0]
     indices = [index - constant for index in indices]
-    signal1 = (indices, signal1[1])
-    return signal1
+    #signal1 = (indices, signal1[1])
+    return indices, signal1[1]
 
 
 def folding_signals(signal1):
-    indices = signal1[0]
-    indices = [-value for value in indices]
-    indices.sort()
-    values = signal1[1]
-    values.reverse()
-    signal1 = (indices, values)
-    return signal1
+    indices, values = signal1
+
+    folded_indices = [-i for i in indices]
+    folded_values = values[:]  # Creates a copy of the values list
+
+    folded_indices.sort()
+    folded_values.reverse()
+
+    return folded_indices, folded_values
 
 
 
@@ -123,28 +93,29 @@ def multiply_signal(signal1):
     for value in values:
         multiplication_result.append(value * constant)
     test.MultiplySignalByConst(5,indices,multiplication_result)
-    plt.plot(indices, values, marker='o', linestyle='-', label="Original Signal")
-    plt.plot(indices, multiplication_result, marker='x', linestyle='--',label="Multiplied Signal")
-    plt.xlabel("Sample Index")
-    plt.ylabel("Amplitude")
-    plt.grid(True)
-    plt.legend()
-    plt.title(f"Original and Multiplied Signal")
-    plt.show()
+    # plt.plot(indices, values, marker='o', linestyle='-', label="Original Signal")
+    # plt.plot(indices, multiplication_result, marker='x', linestyle='--',label="Multiplied Signal")
+    # plt.xlabel("Sample Index")
+    # plt.ylabel("Amplitude")
+    # plt.grid(True)
+    # plt.legend()
+    # plt.title(f"Original and Multiplied Signal")
+    # plt.show()
+    plot_signal(signal1[0], signal1[1], indices, multiplication_result, "Multiplied Signal")
     return indices,multiplication_result
 
 def on_signal1_button_click():
     global signal1
     signal1 = read_signals('Signal1.txt')
 def on_displaysignal1_button_click():
-    plot_signal(signal1[0], signal1[1], 'Signal 1')
+    plot_signal(signal1[0], signal1[1], 0, 0, 'Signal 1')
 
 def on_signal2_button_click():
     global signal2
     signal2 = read_signals('Signal2.txt')
 
 def on_displaysignal2_button_click():
-    plot_signal(signal2[0], signal2[1], 'Signal 2')
+    plot_signal(signal2[0], signal2[1], 0, 0, 'Signal 2')
 
 def on_add_signals_button_click():
     # Add the two signals
@@ -152,25 +123,25 @@ def on_add_signals_button_click():
     test.AddSignalSamplesAreEqual("Signal1.txt", "Signal2.txt",indices, added_values)
 
     # Plot the result
-    plot_signal(indices, added_values, 'Signal 1 + Signal 2')
+    plot_signal(0, 0, indices, added_values, 'Signal 1 + Signal 2')
 
 def on_sub_signals_button_click():
-    indeces , values = sub_signals(signal1, signal2)
+    indeces, values = sub_signals(signal1, signal2)
 
     test.SubSignalSamplesAreEqual("Signal1.txt", "Signal2.txt", indeces, values)
-    plot_signal(indeces, values, "Subtraction Result")
+    plot_signal(0, 0, indeces, values, "Subtraction Result")
 
 def on_multiply_signal1_button_click():
     multiply_signal(signal1)
 def on_fold_signal1_button_click():
     indices, values = folding_signals(signal1)
     test.Folding(indices, values)
-    plot_signal(indices, values, "Folding Result")
+    plot_signal(signal1[0], signal1[1], indices, values, "Folded Signal")
 def on_delay_advancing_signal1_button_click():
     constant = simpledialog.askfloat("Input", "Enter the constant value to shift the signal:")
     indices, values = delay_advancing_signals(signal1, constant)
     test.ShiftSignalByConst(constant, indices, values)
-    plot_signal(indices, values, "Shifting Result")
+    plot_signal(signal1[0], signal1[1], indices, values, "Shifted Signal")
 
 
 # GUI
@@ -219,4 +190,3 @@ delay_advancing_signal1_button = tk.Button(root, text="Delay/Advance Signal", co
 delay_advancing_signal1_button.place(relx=0.5, rely=0.76, anchor='center')
 
 root.mainloop()
-#>>>>>>> afe4a32d3981af9d20a4c2b652166300c558c05a
