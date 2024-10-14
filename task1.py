@@ -1,5 +1,8 @@
 import tkinter as tk
+from tkinter import simpledialog
 import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings('ignore')
 def read_signals(file_path):
     indices = []
     values = []
@@ -42,6 +45,23 @@ def add_signals(signal1, signal2):
         value2 = signal2_values[signal2_indices.index(index)] if index in signal2_indices else 0
         addition_result[i] = value1 + value2
     return all_indices, addition_result
+
+def multiply_signal(signal1):
+    indices, values = signal1
+    multiplication_result = []
+    constant = simpledialog.askfloat("Input", "Enter the constant value to multiply the signal:")
+    for value in values:
+        multiplication_result.append(value * constant)
+    plt.plot(indices, values, marker='o', linestyle='-', label="Original Signal")
+    plt.plot(indices, multiplication_result, marker='x', linestyle='--')
+    plt.xlabel("Sample Index")
+    plt.ylabel("Amplitude")
+    plt.grid(True)
+    plt.legend()
+    plt.title(f"Original and Multiplied Signal")
+    plt.show()
+    return indices,multiplication_result
+
 def on_signal1_button_click():
     global signal1
     signal1 = read_signals('Signal1.txt')
@@ -60,7 +80,10 @@ def on_add_signals_button_click():
     indices, added_values = add_signals(signal1, signal2)
     # Plot the result
     plot_signal(indices, added_values, 'Signal 1 + Signal 2')
+def on_multiply_signal1_button_click():
+    multiply_signal(signal1)
 
+#GUI
 root = tk.Tk()
 root.title("DSP")
 root.geometry("1550x1550")  # Set default size for the window
@@ -87,6 +110,6 @@ displaysignal2_button.pack(pady=5)
 add_signals_button = tk.Button(frame, text="Add Signals", command=on_add_signals_button_click, width=20, height=2)
 add_signals_button.pack(pady=5)
 
+multiply_signal1_button = tk.Button(frame, text="Multiply Signal 1", command=on_multiply_signal1_button_click, width=20, height=2)
+multiply_signal1_button.pack(pady=5)
 root.mainloop()
-
-

@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-# %%
-
-# %%
 
 def ReadSignalFile(file_name):
     expected_indices=[]
@@ -25,11 +20,6 @@ def ReadSignalFile(file_name):
             else:
                 break
     return expected_indices,expected_samples
-
-
-# %%
-
-
 def AddSignalSamplesAreEqual(userFirstSignal,userSecondSignal,Your_indices,Your_samples):
     if(userFirstSignal=='Signal1.txt' and userSecondSignal=='Signal2.txt'):
         file_name="add.txt"  # write here the path of the add output file
