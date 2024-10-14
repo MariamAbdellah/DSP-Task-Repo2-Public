@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import simpledialog
 import matplotlib.pyplot as plt
-import warnings
-warnings.filterwarnings('ignore')
+import TESTfunctions as test
+from PIL import Image, ImageTk
 def read_signals(file_path):
     indices = []
     values = []
@@ -44,7 +44,33 @@ def add_signals(signal1, signal2):
         value1 = signal1_values[signal1_indices.index(index)] if index in signal1_indices else 0
         value2 = signal2_values[signal2_indices.index(index)] if index in signal2_indices else 0
         addition_result[i] = value1 + value2
+    test.AddSignalSamplesAreEqual("Signal1.txt", "Signal2.txt",all_indices, addition_result)
     return all_indices, addition_result
+
+
+
+
+
+def sub_signals(signal1, signal2):
+
+# Implement the sub logic here
+    pass
+
+
+
+def delay_advancing_signals(signal1):
+    # Implement the folding logic here
+    pass
+
+
+def folding_signals(signal1):
+    # Implement the folding logic here
+    pass
+
+
+
+
+
 
 def multiply_signal(signal1):
     indices, values = signal1
@@ -52,8 +78,9 @@ def multiply_signal(signal1):
     constant = simpledialog.askfloat("Input", "Enter the constant value to multiply the signal:")
     for value in values:
         multiplication_result.append(value * constant)
+    test.MultiplySignalByConst(5,indices,multiplication_result)
     plt.plot(indices, values, marker='o', linestyle='-', label="Original Signal")
-    plt.plot(indices, multiplication_result, marker='x', linestyle='--')
+    plt.plot(indices, multiplication_result, marker='x', linestyle='--',label="Multiplied Signal")
     plt.xlabel("Sample Index")
     plt.ylabel("Amplitude")
     plt.grid(True)
@@ -80,36 +107,60 @@ def on_add_signals_button_click():
     indices, added_values = add_signals(signal1, signal2)
     # Plot the result
     plot_signal(indices, added_values, 'Signal 1 + Signal 2')
+
+def on_sub_signals_button_click():
+    sub_signals(signal1)
+
 def on_multiply_signal1_button_click():
     multiply_signal(signal1)
+def on_fold_signal1_button_click():
+    folding_signals(signal1)
+def on_delay_advancing_signal1_button_click():
+    delay_advancing_signals(signal1)
 
-#GUI
+# GUI
 root = tk.Tk()
 root.title("DSP")
-root.geometry("1550x1550")  # Set default size for the window
+root.geometry("1550x1550")
 
-# Create a label for the title
-title_label = tk.Label(root, text="DSP-Task 1", font=("Helvetica", 16))
-title_label.pack(pady=10)  # Add padding around the label
+# Load and set the background image
+background_image = Image.open("bg.jpeg")
+bg_image = ImageTk.PhotoImage(background_image)
 
-frame = tk.Frame(root)
-frame.pack(pady=20)
+# Create a label for the background image
+background_label = tk.Label(root, image=bg_image)
+background_label.place(relwidth=1, relheight=1)
 
-signal1_button = tk.Button(frame, text="Read Signal 1", command=on_signal1_button_click, width=20, height=2)
-signal1_button.pack(pady=5)
+# Create a title label
+title_label = tk.Label(root, text="DSP-Task 1", font=("Helvetica", 32), bg='lightgrey')
+title_label.place(relx=0.5, rely=0.1, anchor='center')  # Center the title label
 
-displaysignal1_button = tk.Button(frame, text="Display Signal 1", command=on_displaysignal1_button_click, width=20, height=2)
-displaysignal1_button.pack(pady=5)
+# Create buttons directly in the root window with a transparent effect
+signal1_button = tk.Button(root, text="Read Signal 1", command=on_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+signal1_button.place(relx=0.5, rely=0.2, anchor='center')
 
-signal2_button = tk.Button(frame, text="Read Signal 2", command=on_signal2_button_click, width=20, height=2)
-signal2_button.pack(pady=5)
+displaysignal1_button = tk.Button(root, text="Display Signal 1", command=on_displaysignal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+displaysignal1_button.place(relx=0.5, rely=0.27, anchor='center')
 
-displaysignal2_button = tk.Button(frame, text="Display Signal 2", command=on_displaysignal2_button_click, width=20, height=2)
-displaysignal2_button.pack(pady=5)
+signal2_button = tk.Button(root, text="Read Signal 2", command=on_signal2_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+signal2_button.place(relx=0.5, rely=0.34, anchor='center')
 
-add_signals_button = tk.Button(frame, text="Add Signals", command=on_add_signals_button_click, width=20, height=2)
-add_signals_button.pack(pady=5)
+displaysignal2_button = tk.Button(root, text="Display Signal 2", command=on_displaysignal2_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+displaysignal2_button.place(relx=0.5, rely=0.41, anchor='center')
 
-multiply_signal1_button = tk.Button(frame, text="Multiply Signal 1", command=on_multiply_signal1_button_click, width=20, height=2)
-multiply_signal1_button.pack(pady=5)
+add_signals_button = tk.Button(root, text="Add Signals", command=on_add_signals_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+add_signals_button.place(relx=0.5, rely=0.48, anchor='center')
+
+sub_signals_button = tk.Button(root, text="Subtract Signals", command=on_sub_signals_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+sub_signals_button.place(relx=0.5, rely=0.55, anchor='center')
+
+multiply_signal1_button = tk.Button(root, text="Multiply Signal", command=on_multiply_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+multiply_signal1_button.place(relx=0.5, rely=0.62, anchor='center')
+
+fold_signal1_button = tk.Button(root, text="Fold Signal", command=on_fold_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+fold_signal1_button.place(relx=0.5, rely=0.69, anchor='center')
+
+delay_advancing_signal1_button = tk.Button(root, text="Delay/Advance Signal", command=on_delay_advancing_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+delay_advancing_signal1_button.place(relx=0.5, rely=0.76, anchor='center')
+
 root.mainloop()
