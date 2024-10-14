@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 
 
 
-def read_file():
-    file = open("signal1.txt", 'r')
+def read_file(path):
+    file = open(path, 'r')
 
     f = file.readlines()
     n = int(f[0].strip())
@@ -30,5 +30,8 @@ def vis(x, y):
     plt.show()
 
 
-indexes, freqs = read_file()
+
+
+
+indexes, freqs = read_file("signal1.txt")
 vis(indexes, freqs)
