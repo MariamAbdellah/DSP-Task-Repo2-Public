@@ -1,5 +1,7 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter import simpledialog
+import numpy as np
 import matplotlib.pyplot as plt
 import TESTfunctions as test
 from PIL import Image, ImageTk
@@ -104,6 +106,7 @@ def multiply_signal(signal1):
     plot_signal(signal1[0], signal1[1], indices, multiplication_result, "Multiplied Signal")
     return indices,multiplication_result
 
+
 def on_signal1_button_click():
     global signal1
     signal1 = read_signals('Signal1.txt')
@@ -142,6 +145,58 @@ def on_delay_advancing_signal1_button_click():
     indices, values = delay_advancing_signals(signal1, constant)
     test.ShiftSignalByConst(constant, indices, values)
     plot_signal(signal1[0], signal1[1], indices, values, "Shifted Signal")
+
+def on_generate_signal_button_click():
+    window = tk.Toplevel()
+    window.title("Generate Signal")
+    window.geometry("500x350")
+
+    tk.Label(window, text = "Signal Type:").grid(row = 0, column = 0, padx=10, pady=5)
+    signal_type = ttk.Combobox(window, values = ["Sine", "Cosine"])
+    signal_type.grid(row = 0, column = 1, padx=10, pady=5)
+
+    tk.Label(window, text = "Amplitude (A):").grid(row = 1, column = 0, padx=10, pady=5)
+    amplitude_entry = tk.Entry(window)
+    amplitude_entry.grid(row = 1, column = 1, padx=10, pady=5)
+
+    tk.Label(window, text="Phase Shift (θ):").grid(row=2, column=0, padx=10, pady=5)
+    phase_shift_entry = tk.Entry(window)
+    phase_shift_entry.grid(row=2, column=1, padx=10, pady=5)
+
+    tk.Label(window, text="Analog Frequency:").grid(row=3, column=0, padx=10, pady=5)
+    analog_freq_entry = tk.Entry(window)
+    analog_freq_entry.grid(row=3, column=1, padx=10, pady=5)
+
+    tk.Label(window, text="Sampling Frequency:").grid(row=4, column=0, padx=10, pady=5)
+    sampling_freq_entry = tk.Entry(window)
+    sampling_freq_entry.grid(row=4, column=1, padx=10, pady=5)
+
+    def on_generate():
+        signal_type_value = signal_type.get()
+        amplitude_value = float(amplitude_entry.get())
+        phase_shift_value = float(phase_shift_entry.get())
+        analog_freq_value = float(analog_freq_entry.get())
+        sampling_freq_value = float(sampling_freq_entry.get())
+
+        generate_signal(signal_type_value, amplitude_value, phase_shift_value, analog_freq_value, sampling_freq_value)
+
+    tk.Button(window, text = "Generate", command = on_generate).grid(row = 5, column = 1, padx=10, pady=5)
+
+
+def generate_signal(signal_type, amp, phase_shift, analog_freq, sample_freq):
+    t = np.arange(0, 1, 1 / sample_freq)  # Time vector
+
+    if signal_type == "Sine":
+        signal = amp * np.sin(2 * np.pi * analog_freq * t + phase_shift)
+    else:
+        signal = amp * np.cos(2 * np.pi * analog_freq * t + phase_shift)
+
+    plt.figure()
+    plt.plot(t, signal)
+    plt.title(f'{signal_type} Signal')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Amplitude')
+    plt.show()
 
 
 # GUI
@@ -188,5 +243,8 @@ fold_signal1_button.place(relx=0.5, rely=0.69, anchor='center')
 
 delay_advancing_signal1_button = tk.Button(root, text="Delay/Advance Signal", command=on_delay_advancing_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
 delay_advancing_signal1_button.place(relx=0.5, rely=0.76, anchor='center')
+
+generate_signal_button = tk.Button(root, text="Generate Signal", command=on_generate_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+generate_signal_button.place(relx=0.5, rely=0.83, anchor='center')
 
 root.mainloop()
