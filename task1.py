@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import simpledialog
+from tkinter import messagebox
 import numpy as np
 import matplotlib.pyplot as plt
 import TESTfunctions as test
@@ -178,6 +179,7 @@ def on_generate_signal_button_click():
     continuous_rb.grid(row = 5, column = 1, padx = 10, pady = 5, sticky = "w")
     discrete_rb.grid(row = 5, column = 2, padx = 10, pady = 5)
 
+
     def on_generate():
         signal_type_value = signal_type.get()
         amplitude_value = float(amplitude_entry.get())
@@ -186,32 +188,41 @@ def on_generate_signal_button_click():
         sampling_freq_value = float(sampling_freq_entry.get())
         representation_value = representation_var.get()
 
+
         generate_signal(signal_type_value, amplitude_value, phase_shift_value, analog_freq_value, sampling_freq_value, representation_value)
 
     tk.Button(window, text = "Generate", command = on_generate).grid(row = 6, column = 1, padx=10, pady=5)
 
 
 def generate_signal(signal_type, amp, phase_shift, analog_freq, sample_freq, representation):
-    t = np.arange(0, 1, 1 / sample_freq)
 
-    if signal_type == "Sine":
-        signal = amp * np.sin(2 * np.pi * analog_freq * t + phase_shift)
-    else:
-        signal = amp * np.cos(2 * np.pi * analog_freq * t + phase_shift)
+    try:
 
-    plt.figure()
+        if sample_freq < 2 * analog_freq:
+            raise ValueError("Invalid sampling frequency value! Sampling frequency should be greater than or equal 2 * analog frequency.")
 
-    if representation == "Continuous":
-        plt.plot(t, signal, label=f'{signal_type} (Continuous)')
-    else:
-        plt.stem(t, signal, linefmt='b-', markerfmt='bo', basefmt="r-", label=f'{signal_type} (Discrete)')
+        t = np.arange(0, 1, 1 / sample_freq)
 
+        if signal_type == "Sine":
+            signal = amp * np.sin(2 * np.pi * analog_freq * t + phase_shift)
+        else:
+            signal = amp * np.cos(2 * np.pi * analog_freq * t + phase_shift)
 
-    plt.title(f'{signal_type} Signal')
-    plt.xlabel('Time (s)')
-    plt.ylabel('Amplitude')
-    plt.grid(True)
-    plt.show()
+        plt.figure()
+
+        if representation == "Continuous":
+            plt.plot(t, signal, label = f'{signal_type} (Continuous)')
+        else:
+            plt.stem(t, signal, label = f'{signal_type} (Discrete)')  # , linefmt='b-', markerfmt='bo', basefmt="r-")
+
+        plt.title(f'{signal_type} Signal')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Amplitude')
+        plt.grid(True)
+        plt.show()
+
+    except ValueError as e:
+        messagebox.showerror("Invalid Input", str(e))
 
 
 
