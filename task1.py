@@ -148,8 +148,8 @@ def on_delay_advancing_signal1_button_click():
 
 def on_generate_signal_button_click():
     window = tk.Toplevel()
-    window.title("Generate Signal")
-    window.geometry("500x350")
+    window.title("Signal Generation")
+    window.geometry("450x300")
 
     tk.Label(window, text = "Signal Type:").grid(row = 0, column = 0, padx=10, pady=5)
     signal_type = ttk.Combobox(window, values = ["Sine", "Cosine"])
@@ -171,20 +171,28 @@ def on_generate_signal_button_click():
     sampling_freq_entry = tk.Entry(window)
     sampling_freq_entry.grid(row=4, column=1, padx=10, pady=5)
 
+    representation_var = tk.StringVar(value = "Continuous")
+    tk.Label(window, text = "Representation:").grid(row = 5, column = 0, padx = 10, pady = 5)
+    continuous_rb = tk.Radiobutton(window, text = "Continuous", variable = representation_var, value = "Continuous")
+    discrete_rb = tk.Radiobutton(window, text = "Discrete", variable = representation_var, value = "Discrete")
+    continuous_rb.grid(row = 5, column = 1, padx = 10, pady = 5, sticky = "w")
+    discrete_rb.grid(row = 5, column = 2, padx = 10, pady = 5)
+
     def on_generate():
         signal_type_value = signal_type.get()
         amplitude_value = float(amplitude_entry.get())
         phase_shift_value = float(phase_shift_entry.get())
         analog_freq_value = float(analog_freq_entry.get())
         sampling_freq_value = float(sampling_freq_entry.get())
+        representation_value = representation_var.get()
 
-        generate_signal(signal_type_value, amplitude_value, phase_shift_value, analog_freq_value, sampling_freq_value)
+        generate_signal(signal_type_value, amplitude_value, phase_shift_value, analog_freq_value, sampling_freq_value, representation_value)
 
-    tk.Button(window, text = "Generate", command = on_generate).grid(row = 5, column = 1, padx=10, pady=5)
+    tk.Button(window, text = "Generate", command = on_generate).grid(row = 6, column = 1, padx=10, pady=5)
 
 
-def generate_signal(signal_type, amp, phase_shift, analog_freq, sample_freq):
-    t = np.arange(0, 1, 1 / sample_freq)  # Time vector
+def generate_signal(signal_type, amp, phase_shift, analog_freq, sample_freq, representation):
+    t = np.arange(0, 1, 1 / sample_freq)
 
     if signal_type == "Sine":
         signal = amp * np.sin(2 * np.pi * analog_freq * t + phase_shift)
@@ -192,11 +200,19 @@ def generate_signal(signal_type, amp, phase_shift, analog_freq, sample_freq):
         signal = amp * np.cos(2 * np.pi * analog_freq * t + phase_shift)
 
     plt.figure()
-    plt.plot(t, signal)
+
+    if representation == "Continuous":
+        plt.plot(t, signal, label=f'{signal_type} (Continuous)')
+    else:
+        plt.stem(t, signal, linefmt='b-', markerfmt='bo', basefmt="r-", label=f'{signal_type} (Discrete)')
+
+
     plt.title(f'{signal_type} Signal')
     plt.xlabel('Time (s)')
     plt.ylabel('Amplitude')
+    plt.grid(True)
     plt.show()
+
 
 
 # GUI
