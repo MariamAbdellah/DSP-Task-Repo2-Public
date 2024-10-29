@@ -4,6 +4,8 @@ from tkinter import simpledialog
 from tkinter import messagebox
 import numpy as np
 import matplotlib.pyplot as plt
+
+import QuanTest1
 import TESTfunctions as test
 from PIL import Image, ImageTk
 def read_signals(file_path):
@@ -19,7 +21,7 @@ def read_signals(file_path):
             line = file.readline().strip()
             parts = line.split()
             index = int(parts[0])
-            value = float(parts[1]) #was int & don't know if it will cause an error in other functions
+            value = float(parts[1])   #was int & don't know if it will cause an error in other functions
             indices.append(index)
             values.append(value)
     return indices, values
@@ -223,28 +225,62 @@ def generate_signal(signal_type, amp, phase_shift, analog_freq, sample_freq):
   #      messagebox.showerror("Invalid Input", str(e))
 
 
-def quantize_signal():
-    index, values = read_signals("Test 1/Quan1_input.txt")
+def on_quantize_signal_button_click():
+    window = tk.Toplevel()
+    window.title("Signal Quantization")
+    window.geometry("450x300")
+
+    tk.Label(window, text = "Quantize Using:").grid(row = 0, column = 0, padx = 10, pady = 5)
+    quant_type = ttk.Combobox(window, values = ["Levels", "Bits"])
+    quant_type.grid(row = 0, column = 1, padx = 10, pady = 5)
+
+    tk.Label(window, text = "Value:").grid(row = 1, column = 0, padx = 10, pady = 5)
+    type_entry = tk.Entry(window)
+    type_entry.grid(row = 1, column = 1, padx = 10, pady = 5)
+
+    def on_quantize():
+        levels = int(type_entry.get())
+        if quant_type.get() == "Bits":
+            levels = 2 ** int(type_entry.get())
+        quantized_values = quantize_signal(levels)
+
+
+    tk.Button(window, text = "Generate", command = on_quantize).grid(row = 2, column = 1, padx = 10, pady = 5)
+    #QuanTest1.QuantizationTest1("Quan1_input.txt", quantized_values, )
+
+def quantize_signal(levels):
+
+    index, values = read_signals("Quan1_input.txt")
     minx = min(values)
     maxx = max(values)
-    levels = simpledialog.askinteger("Input", "Enter number of levels:")
+    #levels = simpledialog.askinteger("Input", "Enter number of levels:")
     delta = (maxx - minx) / levels
 
 
     ranges = [[]]
     ranges.insert(0, [values[0], values[0] + delta])
     #if levels is not None:
-    for i in range(levels):
-        ranges.append([values[i], values[i] + delta])
+    for i in range(levels - 1):
+        ranges.insert(i + 1, [ranges[i][1], ranges[i][1] + delta])
 
 
-    print(ranges)
+    points = []
+    for sub in ranges:
+        if sub:
+            points.append((sub[0] + sub[1]) / 2)
 
 
+    quantized = []
+    for e in values:
+        i = 0
+        for sub in ranges:
+            if sub:
+                if sub[0] <= e <= sub[1]:
+                    quantized.append(points[i])
+                i+=1
+    #print(quantized)
+    return quantized
 
-
-def on_quantize_signal_button_click():
-    quantize_signal()
 
 # GUI
 root = tk.Tk()
