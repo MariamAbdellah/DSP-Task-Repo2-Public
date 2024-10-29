@@ -1,3 +1,4 @@
+import math
 import tkinter as tk
 from tkinter import ttk
 from tkinter import simpledialog
@@ -6,20 +7,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 import TESTfunctions as test
 from PIL import Image, ImageTk
+import QuanTest1 as qt1
+import QuanTest2 as qt2
+
+
 def read_signals(file_path):
     indices = []
     values = []
-    # Open the specified file and read its content
+
     with open(file_path, 'r') as file:
         file.readline()  # Skip first line
         file.readline()  # Skip second line
-        N = int(file.readline())
-        # Read the sample indices and values
+        N = int(file.readline())  # Number of signal pairs
+
         for _ in range(N):
             line = file.readline().strip()
             parts = line.split()
-            index = int(parts[0])
-            value = int(parts[1])
+
+            if len(parts) == 2:
+                index = float(parts[0])  # Treat index as float
+                value = float(parts[1])  # Treat value as float
+            else:
+                continue  # Skip lines that don't match the expected format
+
             indices.append(index)
             values.append(value)
     return indices, values
@@ -222,6 +232,63 @@ def generate_signal(signal_type, amp, phase_shift, analog_freq, sample_freq):
   #  except ValueError as e:
   #      messagebox.showerror("Invalid Input", str(e))
 
+def quantize_signal_onclick_button():
+    window = tk.Toplevel()
+    window.title("Signal Quantization")
+    window.geometry("450x300")
+
+    # Create dropdown for Quantization type (levels or bits)
+    tk.Label(window, text="Quantization Type:").grid(row=0, column=0, padx=10, pady=5)
+    quantization_type = ttk.Combobox(window, values=["levels", "bits"])
+    quantization_type.grid(row=0, column=1, padx=10, pady=5)
+
+    # Entry for number of levels or bits
+    tk.Label(window, text="Enter Value:").grid(row=1, column=0, padx=10, pady=5)
+    entry = tk.Entry(window)
+    entry.grid(row=1, column=1, padx=10, pady=5)
+
+    def calculate_levels():
+        Quantizationtype = quantization_type.get()
+        input_value = int(entry.get())
+
+        if Quantizationtype == 'bits':
+            num_of_levels = int(math.pow(2, input_value))
+        elif Quantizationtype == 'levels':
+            num_of_levels = input_value
+       # encoded_signal,quantized_signal=quantize_signal(num_of_levels)
+        #qt1.QuantizationTest1('Quan1_Out.txt',encoded_signal,quantized_signal)
+
+    # Button to calculate levels
+    calculate_button = tk.Button(window, text="Calculate", command=calculate_levels)
+    calculate_button.grid(row=2, columnspan=2, pady=10)
+
+
+def quantize_signal(num_of_levels):
+    levels = []
+    quantized_signal = []
+    quantization_error = []
+
+    signal = read_signals('Quan1_input.txt')
+    min_value = min(signal[1])
+    max_value = max(signal[1])
+    rangevalue = max_value - min_value
+    step_size = rangevalue / (num_of_levels - 1)
+
+    # Level values
+    for i in range(num_of_levels):
+        level = min_value + step_size * i
+        levels.append(level)
+
+    # Mapping to closest level
+    for sample in signal[1]:
+        mindiff = float('inf')
+        closest_level = None
+        for levelvalue in levels:
+            if mindiff > abs(levelvalue - sample):
+                mindiff = abs(levelvalue - sample)
+                closest_level = levelvalue
+        quantized_signal.append(closest_level)
+
 
 
 # GUI
@@ -237,44 +304,45 @@ bg_image = ImageTk.PhotoImage(background_image)
 background_label = tk.Label(root, image=bg_image)
 background_label.place(relwidth=1, relheight=1)
 
-# Create a title label
-# Title Label
+
 title_label = tk.Label(root, text="DSP-Task", font=("Helvetica", 32), bg='lightgrey')
-title_label.place(relx=0.5, rely=0.04, anchor='center')  # Center the title label
+title_label.place(relx=0.49, rely=0.04, anchor='center')  # Center the title label
 
 # Buttons
 signal1_button = tk.Button(root, text="Read Signal 1", command=on_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-signal1_button.place(relx=0.5, rely=0.12, anchor='center')
+signal1_button.place(relx=0.48, rely=0.12, anchor='e')
 
 displaysignal1_button = tk.Button(root, text="Display Signal 1", command=on_displaysignal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-displaysignal1_button.place(relx=0.5, rely=0.19, anchor='center')
+displaysignal1_button.place(relx=0.48, rely=0.19, anchor='e')
 
 signal2_button = tk.Button(root, text="Read Signal 2", command=on_signal2_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-signal2_button.place(relx=0.5, rely=0.26, anchor='center')
+signal2_button.place(relx=0.48, rely=0.26, anchor='e')
 
 displaysignal2_button = tk.Button(root, text="Display Signal 2", command=on_displaysignal2_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-displaysignal2_button.place(relx=0.5, rely=0.33, anchor='center')
+displaysignal2_button.place(relx=0.48, rely=0.33, anchor='e')
 
 displaybothsignal_button = tk.Button(root, text="Display Both Signals", command=on_displaybothsignals_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-displaybothsignal_button.place(relx=0.5, rely=0.4, anchor='center')
+displaybothsignal_button.place(relx=0.48, rely=0.4, anchor='e')
 
 
 add_signals_button = tk.Button(root, text="Add Signals", command=on_add_signals_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-add_signals_button.place(relx=0.5, rely=0.47, anchor='center')
+add_signals_button.place(relx=0.5, rely=0.12, anchor='w')
 
 sub_signals_button = tk.Button(root, text="Subtract Signals", command=on_sub_signals_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-sub_signals_button.place(relx=0.5, rely=0.54, anchor='center')
+sub_signals_button.place(relx=0.5, rely=0.19, anchor='w')
 
 multiply_signal1_button = tk.Button(root, text="Multiply Signal", command=on_multiply_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-multiply_signal1_button.place(relx=0.5, rely=0.61, anchor='center')
+multiply_signal1_button.place(relx=0.5, rely=0.26, anchor='w')
 
 fold_signal1_button = tk.Button(root, text="Fold Signal", command=on_fold_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-fold_signal1_button.place(relx=0.5, rely=0.68, anchor='center')
+fold_signal1_button.place(relx=0.5, rely=0.33, anchor='w')
 
 delay_advancing_signal1_button = tk.Button(root, text="Delay/Advance Signal", command=on_delay_advancing_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-delay_advancing_signal1_button.place(relx=0.5, rely=0.75, anchor='center')
+delay_advancing_signal1_button.place(relx=0.5, rely=0.4, anchor='w')
 
 generate_signal_button = tk.Button(root, text="Generate Signal", command=on_generate_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-generate_signal_button.place(relx=0.5, rely=0.83, anchor='center')
+generate_signal_button.place(relx=0.49, rely=0.47, anchor='center')
 
+quantize_button = tk.Button(root, text="Quantize Signal", command=quantize_signal_onclick_button, width=20, height=2, bg='lightgrey', relief='flat')
+quantize_button.place(relx=0.49, rely=0.54, anchor='center')
 root.mainloop()
