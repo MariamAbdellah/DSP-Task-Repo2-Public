@@ -19,7 +19,7 @@ def read_signals(file_path):
             line = file.readline().strip()
             parts = line.split()
             index = int(parts[0])
-            value = int(parts[1])
+            value = float(parts[1]) #was int & don't know if it will cause an error in other functions
             indices.append(index)
             values.append(value)
     return indices, values
@@ -37,9 +37,9 @@ def plot_signal(x1, y1, x2, y2,label, label1,label2):
         representation_value = representation.get()  # Get the selected value when plotting
         if representation_value == 'Continuous':
             if (isinstance(x1, (list, np.ndarray)) and len(x1) > 0) and (isinstance(y1, (list, np.ndarray)) and len(y1) > 0):
-                plt.plot(x1, y1, marker='o', linestyle='-', label=label1,color='blue',markerfacecolor='orange', markeredgecolor='orange')
+                plt.plot(x1, y1, marker='o', linestyle='-', label=label1, color='blue',markerfacecolor='orange', markeredgecolor='orange')
             if (isinstance(x2, (list, np.ndarray)) and len(x2) > 0) and (isinstance(y2, (list, np.ndarray)) and len(y2) > 0):
-                plt.plot(x2, y2, marker='o', linestyle='-', label=label2,color='red',markerfacecolor='red')
+                plt.plot(x2, y2, marker='o', linestyle='-', label=label2, color='red',markerfacecolor='red')
         else:
             if (isinstance(x1, (list, np.ndarray)) and len(x1) > 0) and (isinstance(y1, (list, np.ndarray)) and len(y1) > 0):
                 plt.stem(x1, y1, linefmt='b-', markerfmt='bo', basefmt=' ', label=label1)
@@ -182,8 +182,8 @@ def on_generate_signal_button_click():
         phase_shift_value = float(phase_shift_entry.get())
         analog_freq_value = float(analog_freq_entry.get())
         sampling_freq_value = float(sampling_freq_entry.get())
-        signal, time=generate_signal(signal_type_value, amplitude_value, phase_shift_value, analog_freq_value, sampling_freq_value)
-        plot_signal(time,signal,[],[],'Generate Signal',"Generated Signal","")
+        signal, time = generate_signal(signal_type_value, amplitude_value, phase_shift_value, analog_freq_value, sampling_freq_value)
+        plot_signal(time, signal, [], [], 'Generate Signal', "Generated Signal", "")
 
     tk.Button(window, text = "Generate", command = on_generate).grid(row = 6, column = 1, padx=10, pady=5)
 
@@ -223,6 +223,28 @@ def generate_signal(signal_type, amp, phase_shift, analog_freq, sample_freq):
   #      messagebox.showerror("Invalid Input", str(e))
 
 
+def quantize_signal():
+    index, values = read_signals("Test 1/Quan1_input.txt")
+    minx = min(values)
+    maxx = max(values)
+    levels = simpledialog.askinteger("Input", "Enter number of levels:")
+    delta = (maxx - minx) / levels
+
+
+    ranges = [[]]
+    ranges.insert(0, [values[0], values[0] + delta])
+    #if levels is not None:
+    for i in range(levels):
+        ranges.append([values[i], values[i] + delta])
+
+
+    print(ranges)
+
+
+
+
+def on_quantize_signal_button_click():
+    quantize_signal()
 
 # GUI
 root = tk.Tk()
@@ -245,9 +267,11 @@ title_label.place(relx=0.5, rely=0.04, anchor='center')  # Center the title labe
 # Buttons
 signal1_button = tk.Button(root, text="Read Signal 1", command=on_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
 signal1_button.place(relx=0.5, rely=0.12, anchor='center')
+#signal1_button.grid(row=0, column=0, padx=10, pady=5)
 
 displaysignal1_button = tk.Button(root, text="Display Signal 1", command=on_displaysignal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
 displaysignal1_button.place(relx=0.5, rely=0.19, anchor='center')
+#displaysignal1_button.grid(row=0, column=0, padx=10, pady=5)
 
 signal2_button = tk.Button(root, text="Read Signal 2", command=on_signal2_button_click, width=20, height=2, bg='lightgrey', relief='flat')
 signal2_button.place(relx=0.5, rely=0.26, anchor='center')
@@ -275,6 +299,10 @@ delay_advancing_signal1_button = tk.Button(root, text="Delay/Advance Signal", co
 delay_advancing_signal1_button.place(relx=0.5, rely=0.75, anchor='center')
 
 generate_signal_button = tk.Button(root, text="Generate Signal", command=on_generate_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-generate_signal_button.place(relx=0.5, rely=0.83, anchor='center')
+generate_signal_button.place(relx=0.5, rely=0.82, anchor='center')
+
+quantize_signal_button = tk.Button(root, text="Quantize Signal", command=on_quantize_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+#quantize_signal.grid(row=0, column=0, padx=50, pady=100)
+quantize_signal_button.place(relx=0.5, rely=0.89, anchor='center')
 
 root.mainloop()
