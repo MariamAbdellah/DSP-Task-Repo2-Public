@@ -1,35 +1,28 @@
-import math
 import tkinter as tk
 from tkinter import ttk
 from tkinter import simpledialog
 from tkinter import messagebox
 import numpy as np
 import matplotlib.pyplot as plt
-import TESTfunctions as test
-from PIL import Image, ImageTk
+import math
 import QuanTest1 as qt1
 import QuanTest2 as qt2
-
-
+import TESTfunctions as test
+from PIL import Image, ImageTk
 def read_signals(file_path):
     indices = []
     values = []
-
+    # Open the specified file and read its content
     with open(file_path, 'r') as file:
         file.readline()  # Skip first line
         file.readline()  # Skip second line
-        N = int(file.readline())  # Number of signal pairs
-
+        N = int(file.readline())
+        # Read the sample indices and values
         for _ in range(N):
             line = file.readline().strip()
             parts = line.split()
-
-            if len(parts) == 2:
-                index = float(parts[0])  # Treat index as float
-                value = float(parts[1])  # Treat value as float
-            else:
-                continue  # Skip lines that don't match the expected format
-
+            index = int(parts[0])
+            value = float(parts[1])   #was int & don't know if it will cause an error in other functions
             indices.append(index)
             values.append(value)
     return indices, values
@@ -47,9 +40,9 @@ def plot_signal(x1, y1, x2, y2,label, label1,label2):
         representation_value = representation.get()  # Get the selected value when plotting
         if representation_value == 'Continuous':
             if (isinstance(x1, (list, np.ndarray)) and len(x1) > 0) and (isinstance(y1, (list, np.ndarray)) and len(y1) > 0):
-                plt.plot(x1, y1, marker='o', linestyle='-', label=label1,color='blue',markerfacecolor='orange', markeredgecolor='orange')
+                plt.plot(x1, y1, marker='o', linestyle='-', label=label1, color='blue',markerfacecolor='orange', markeredgecolor='orange')
             if (isinstance(x2, (list, np.ndarray)) and len(x2) > 0) and (isinstance(y2, (list, np.ndarray)) and len(y2) > 0):
-                plt.plot(x2, y2, marker='o', linestyle='-', label=label2,color='red',markerfacecolor='red')
+                plt.plot(x2, y2, marker='o', linestyle='-', label=label2, color='red',markerfacecolor='red')
         else:
             if (isinstance(x1, (list, np.ndarray)) and len(x1) > 0) and (isinstance(y1, (list, np.ndarray)) and len(y1) > 0):
                 plt.stem(x1, y1, linefmt='b-', markerfmt='bo', basefmt=' ', label=label1)
@@ -192,8 +185,8 @@ def on_generate_signal_button_click():
         phase_shift_value = float(phase_shift_entry.get())
         analog_freq_value = float(analog_freq_entry.get())
         sampling_freq_value = float(sampling_freq_entry.get())
-        signal, time=generate_signal(signal_type_value, amplitude_value, phase_shift_value, analog_freq_value, sampling_freq_value)
-        plot_signal(time,signal,[],[],'Generate Signal',"Generated Signal","")
+        signal, time = generate_signal(signal_type_value, amplitude_value, phase_shift_value, analog_freq_value, sampling_freq_value)
+        plot_signal(time, signal, [], [], 'Generate Signal', "Generated Signal", "")
 
     tk.Button(window, text = "Generate", command = on_generate).grid(row = 6, column = 1, padx=10, pady=5)
 
@@ -232,63 +225,124 @@ def generate_signal(signal_type, amp, phase_shift, analog_freq, sample_freq):
   #  except ValueError as e:
   #      messagebox.showerror("Invalid Input", str(e))
 
-def quantize_signal_onclick_button():
+
+def on_quantize_signal_button_click():
     window = tk.Toplevel()
     window.title("Signal Quantization")
     window.geometry("450x300")
 
-    # Create dropdown for Quantization type (levels or bits)
-    tk.Label(window, text="Quantization Type:").grid(row=0, column=0, padx=10, pady=5)
-    quantization_type = ttk.Combobox(window, values=["levels", "bits"])
-    quantization_type.grid(row=0, column=1, padx=10, pady=5)
+    tk.Label(window, text = "Quantize Using:").grid(row = 0, column = 0, padx = 10, pady = 5)
+    quant_type = ttk.Combobox(window, values = ["Levels", "Bits"])
+    quant_type.grid(row = 0, column = 1, padx = 10, pady = 5)
 
-    # Entry for number of levels or bits
-    tk.Label(window, text="Enter Value:").grid(row=1, column=0, padx=10, pady=5)
-    entry = tk.Entry(window)
-    entry.grid(row=1, column=1, padx=10, pady=5)
+    tk.Label(window, text = "Value:").grid(row = 1, column = 0, padx = 10, pady = 5)
+    type_entry = tk.Entry(window)
+    type_entry.grid(row = 1, column = 1, padx = 10, pady = 5)
 
-    def calculate_levels():
-        Quantizationtype = quantization_type.get()
-        input_value = int(entry.get())
+    def on_quantize():
+        levels = int(type_entry.get())
+        s=quant_type.get()
+        if quant_type.get() == "Bits":
+            levels = 2 ** int(type_entry.get())
+        quantize_signal(levels,s)
+    tk.Button(window, text = "Generate", command = on_quantize).grid(row = 2, column = 1, padx = 10, pady = 5)
+    #QuanTest1.QuantizationTest1("Quan1_input.txt", quantized_values, )
 
-        if Quantizationtype == 'bits':
-            num_of_levels = int(math.pow(2, input_value))
-        elif Quantizationtype == 'levels':
-            num_of_levels = input_value
-       # encoded_signal,quantized_signal=quantize_signal(num_of_levels)
-        #qt1.QuantizationTest1('Quan1_Out.txt',encoded_signal,quantized_signal)
+def quantize_signal(levels,s):
+    if s=='Bits':
+        signal=read_signals("Quan1_input.txt")
+        index=signal[0]
+        values =signal[1]
+    else:
+        signal=read_signals("Quan2_input.txt")
+        index=signal[0]
+        values =signal[1]
 
-    # Button to calculate levels
-    calculate_button = tk.Button(window, text="Calculate", command=calculate_levels)
-    calculate_button.grid(row=2, columnspan=2, pady=10)
+    encoded_signal=[]
+    minx = min(values)
+    maxx = max(values)
+    #levels = simpledialog.askinteger("Input", "Enter number of levels:")
+    delta = (maxx - minx) / levels
+
+    ranges = []
+    interval_indices=[]
+
+    #if levels is not None:
+    for i in range(levels):
+        low = minx + i * delta
+        high = minx + (i + 1) * delta
+        ranges.append((low, high))
+
+    points = []
+    for sub in ranges:
+        mid=(sub[0] + sub[1]) / 2
+        points.append(mid)
+
+    quantized = []
+
+    for signal_value in values:
+        closest_midpoint = None
+        minimum_difference = float('inf')
+        for midpoint in points:
+            difference = abs(midpoint - signal_value)
+            if difference < minimum_difference:
+                minimum_difference = difference
+                closest_midpoint = midpoint
+        quantized.append(closest_midpoint)
 
 
-def quantize_signal(num_of_levels):
-    levels = []
-    quantized_signal = []
-    quantization_error = []
+    quantization_error = np.array(quantized) - np.array(values)
+    avg_power_error = np.mean(quantization_error ** 2)
+    bits = math.ceil(math.log2(levels))
 
-    signal = read_signals('Quan1_input.txt')
-    min_value = min(signal[1])
-    max_value = max(signal[1])
-    rangevalue = max_value - min_value
-    step_size = rangevalue / (num_of_levels - 1)
+    for closest_midpoint in quantized:
+        index = points.index(closest_midpoint)
+        binary_encoded = format(index, f'0{bits}b')
+        encoded_signal.append(binary_encoded)
 
-    # Level values
-    for i in range(num_of_levels):
-        level = min_value + step_size * i
-        levels.append(level)
+    for encoded in encoded_signal:
+        interval_index = int(encoded, 2) + 1  # Convert binary to integer and add 1
+        interval_indices.append(interval_index)
+        # Display
+    plt.figure(figsize=(12, 8))
 
-    # Mapping to closest level
-    for sample in signal[1]:
-        mindiff = float('inf')
-        closest_level = None
-        for levelvalue in levels:
-            if mindiff > abs(levelvalue - sample):
-                mindiff = abs(levelvalue - sample)
-                closest_level = levelvalue
-        quantized_signal.append(closest_level)
+    # Original and Quantized Signal
+    plt.subplot(3, 1, 1)
+    plt.plot(signal[0], signal[1], 'o-', label="Original Signal", color='blue')
+    plt.step(signal[0], quantized, label="Quantized Signal", color='orange', where='mid', marker='o')
+    plt.title("Original and Quantized Signal")
+    plt.xlabel("Index")
+    plt.ylabel("Amplitude")
+    plt.legend()
+    plt.grid(True)
+    plt.xticks(signal[0])
 
+    # Quantization Error
+    plt.subplot(3, 1, 2)
+    plt.plot(signal[0], quantization_error, 'ro-', label="Quantization Error")
+    plt.title("Quantization Error")
+    plt.xlabel("Index")
+    plt.ylabel("Error")
+    plt.grid(True)
+    plt.xticks(signal[0])
+
+    # Binary Encoding text
+    binary_text = "Index   Binary Encoding\n" + "\n".join(
+        [f"{i:<5}: {encoded_signal[i]}" for i in range(levels)])
+    plt.subplot(3, 1, 3)
+    plt.axis("off")
+    plt.text(0.5, 0.5, binary_text, ha='center', va='center', fontsize=10, color="black", family="monospace", wrap=True)
+    plt.title("Encoding of Quantized Signal")
+
+    # Add average power error to the plot
+    plt.figtext(0.05, 0.2, f"Average Power Error: {avg_power_error:.4f}", ha='left', fontsize=12, color='black')
+
+    plt.tight_layout()
+    plt.show()
+    if s=='Bits':
+        qt1.QuantizationTest1('Quan1_Out.txt',encoded_signal,quantized)
+    else:
+        qt2.QuantizationTest2('Quan2_Out.txt', interval_indices, encoded_signal, quantized, quantization_error)
 
 
 # GUI
@@ -341,8 +395,8 @@ delay_advancing_signal1_button = tk.Button(root, text="Delay/Advance Signal", co
 delay_advancing_signal1_button.place(relx=0.5, rely=0.4, anchor='w')
 
 generate_signal_button = tk.Button(root, text="Generate Signal", command=on_generate_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-generate_signal_button.place(relx=0.49, rely=0.47, anchor='center')
+generate_signal_button.place(relx=0.5, rely=0.47, anchor='w')
 
-quantize_button = tk.Button(root, text="Quantize Signal", command=quantize_signal_onclick_button, width=20, height=2, bg='lightgrey', relief='flat')
-quantize_button.place(relx=0.49, rely=0.54, anchor='center')
+quantize_button = tk.Button(root, text="Quantize Signal", command=on_quantize_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+quantize_button.place(relx=0.48, rely=0.47, anchor='e')
 root.mainloop()

@@ -22,16 +22,19 @@ def QuantizationTest1(file_name,Your_EncodedValues,Your_QuantizedValues):
             else:
                 break
     if( (len(Your_EncodedValues)!=len(expectedEncodedValues)) or (len(Your_QuantizedValues)!=len(expectedQuantizedValues))):
-        print("QuantizationTest1 Test case failed, your signal have different length from the expected one")
+        messagebox.showerror("Quantization Test Error",
+                             " Test case failed: your signal has a different length from the expected one")
         return
     for i in range(len(Your_EncodedValues)):
         if(Your_EncodedValues[i]!=expectedEncodedValues[i]):
-            print("QuantizationTest1 Test case failed, your EncodedValues have different EncodedValues from the expected one")
+            messagebox.showerror("Quantization Test Error",
+                                 " Test case failed: your EncodedValues are different from the expected ones")
             return
     for i in range(len(expectedQuantizedValues)):
         if abs(Your_QuantizedValues[i] - expectedQuantizedValues[i]) < 0.01:
             continue
         else:
-            print("QuantizationTest1 Test case failed, your QuantizedValues have different values from the expected one") 
+            messagebox.showerror("Quantization Test Error",
+                                 " Test case failed: your QuantizedValues differ from the expected ones")
             return
-    print("QuantizationTest1 Test case passed successfully")
+    messagebox.showinfo("Quantization Test Result", " Test case passed successfully")
