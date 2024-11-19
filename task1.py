@@ -4,9 +4,15 @@ from tkinter import simpledialog
 from tkinter import messagebox
 import numpy as np
 import matplotlib.pyplot as plt
+<<<<<<< HEAD
 
 import CompareSignal
 import QuanTest1
+=======
+import math
+import QuanTest1 as qt1
+import QuanTest2 as qt2
+>>>>>>> 59bcdbdb4bc6be27f2e11117cfe0d9729daf29fa
 import TESTfunctions as test
 from PIL import Image, ImageTk
 def read_signals(file_path):
@@ -241,6 +247,7 @@ def on_quantize_signal_button_click():
 
     def on_quantize():
         levels = int(type_entry.get())
+<<<<<<< HEAD
         if quant_type.get() == "Bits":
             levels = 2 ** int(type_entry.get())
         quantized_values = quantize_signal(levels)
@@ -252,11 +259,32 @@ def on_quantize_signal_button_click():
 def quantize_signal(levels):
 
     index, values = read_signals("Quan2_input.txt")
+=======
+        s=quant_type.get()
+        if quant_type.get() == "Bits":
+            levels = 2 ** int(type_entry.get())
+        quantize_signal(levels,s)
+    tk.Button(window, text = "Generate", command = on_quantize).grid(row = 2, column = 1, padx = 10, pady = 5)
+    #QuanTest1.QuantizationTest1("Quan1_input.txt", quantized_values, )
+
+def quantize_signal(levels,s):
+    if s=='Bits':
+        signal=read_signals("Quan1_input.txt")
+        index=signal[0]
+        values =signal[1]
+    else:
+        signal=read_signals("Quan2_input.txt")
+        index=signal[0]
+        values =signal[1]
+
+    encoded_signal=[]
+>>>>>>> 59bcdbdb4bc6be27f2e11117cfe0d9729daf29fa
     minx = min(values)
     maxx = max(values)
     #levels = simpledialog.askinteger("Input", "Enter number of levels:")
     delta = (maxx - minx) / levels
 
+<<<<<<< HEAD
 
     ranges = [[]]
     ranges.insert(0, [minx, minx + delta])
@@ -349,6 +377,87 @@ def on_sharpening_button_click():
     print(first_derivative)
     print(sec_derivative)
 
+=======
+    ranges = []
+    interval_indices=[]
+
+    #if levels is not None:
+    for i in range(levels):
+        low = minx + i * delta
+        high = minx + (i + 1) * delta
+        ranges.append((low, high))
+
+    points = []
+    for sub in ranges:
+        mid=(sub[0] + sub[1]) / 2
+        points.append(mid)
+
+    quantized = []
+
+    for signal_value in values:
+        closest_midpoint = None
+        minimum_difference = float('inf')
+        for midpoint in points:
+            difference = abs(midpoint - signal_value)
+            if difference < minimum_difference:
+                minimum_difference = difference
+                closest_midpoint = midpoint
+        quantized.append(closest_midpoint)
+
+
+    quantization_error = np.array(quantized) - np.array(values)
+    avg_power_error = np.mean(quantization_error ** 2)
+    bits = math.ceil(math.log2(levels))
+
+    for closest_midpoint in quantized:
+        index = points.index(closest_midpoint)
+        binary_encoded = format(index, f'0{bits}b')
+        encoded_signal.append(binary_encoded)
+
+    for encoded in encoded_signal:
+        interval_index = int(encoded, 2) + 1  # Convert binary to integer and add 1
+        interval_indices.append(interval_index)
+        # Display
+    plt.figure(figsize=(12, 8))
+
+    # Original and Quantized Signal
+    plt.subplot(3, 1, 1)
+    plt.plot(signal[0], signal[1], 'o-', label="Original Signal", color='blue')
+    plt.step(signal[0], quantized, label="Quantized Signal", color='orange', where='mid', marker='o')
+    plt.title("Original and Quantized Signal")
+    plt.xlabel("Index")
+    plt.ylabel("Amplitude")
+    plt.legend()
+    plt.grid(True)
+    plt.xticks(signal[0])
+
+    # Quantization Error
+    plt.subplot(3, 1, 2)
+    plt.plot(signal[0], quantization_error, 'ro-', label="Quantization Error")
+    plt.title("Quantization Error")
+    plt.xlabel("Index")
+    plt.ylabel("Error")
+    plt.grid(True)
+    plt.xticks(signal[0])
+
+    # Binary Encoding text
+    binary_text = "Index   Binary Encoding\n" + "\n".join(
+        [f"{i:<5}: {encoded_signal[i]}" for i in range(levels)])
+    plt.subplot(3, 1, 3)
+    plt.axis("off")
+    plt.text(0.5, 0.5, binary_text, ha='center', va='center', fontsize=10, color="black", family="monospace", wrap=True)
+    plt.title("Encoding of Quantized Signal")
+
+    # Add average power error to the plot
+    plt.figtext(0.05, 0.2, f"Average Power Error: {avg_power_error:.4f}", ha='left', fontsize=12, color='black')
+
+    plt.tight_layout()
+    plt.show()
+    if s=='Bits':
+        qt1.QuantizationTest1('Quan1_Out.txt',encoded_signal,quantized)
+    else:
+        qt2.QuantizationTest2('Quan2_Out.txt', interval_indices, encoded_signal, quantized, quantization_error)
+>>>>>>> 59bcdbdb4bc6be27f2e11117cfe0d9729daf29fa
 
 
 # GUI
@@ -364,10 +473,9 @@ bg_image = ImageTk.PhotoImage(background_image)
 background_label = tk.Label(root, image=bg_image)
 background_label.place(relwidth=1, relheight=1)
 
-# Create a title label
-# Title Label
+
 title_label = tk.Label(root, text="DSP-Task", font=("Helvetica", 32), bg='lightgrey')
-title_label.place(relx=0.5, rely=0.04, anchor='center')  # Center the title label
+title_label.place(relx=0.49, rely=0.04, anchor='center')  # Center the title label
 
 # Buttons
 signal1_button = tk.Button(root, text="Read Signal 1", command=on_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
@@ -403,6 +511,7 @@ delay_advancing_signal1_button.place(relx=0.5, rely=0.4, anchor='w')
 
 generate_signal_button = tk.Button(root, text="Generate Signal", command=on_generate_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
 generate_signal_button.place(relx=0.5, rely=0.47, anchor='w')
+<<<<<<< HEAD
 
 quantize_button = tk.Button(root, text="Quantize Signal", command=on_quantize_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
 quantize_button.place(relx=0.48, rely=0.47, anchor='e')
@@ -412,5 +521,9 @@ compute_average_button.place(relx=0.48, rely=0.54, anchor='e')
 
 sharpening_button = tk.Button(root, text="Sharpen Signal", command=on_sharpening_button_click, width=20, height=2, bg='lightgrey', relief='flat')
 sharpening_button.place(relx=0.5, rely=0.54, anchor='w')
+=======
+>>>>>>> 59bcdbdb4bc6be27f2e11117cfe0d9729daf29fa
 
+quantize_button = tk.Button(root, text="Quantize Signal", command=on_quantize_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+quantize_button.place(relx=0.48, rely=0.47, anchor='e')
 root.mainloop()
