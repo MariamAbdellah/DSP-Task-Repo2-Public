@@ -4,15 +4,11 @@ from tkinter import simpledialog
 from tkinter import messagebox
 import numpy as np
 import matplotlib.pyplot as plt
-<<<<<<< HEAD
-
 import CompareSignal
 import QuanTest1
-=======
 import math
 import QuanTest1 as qt1
 import QuanTest2 as qt2
->>>>>>> 59bcdbdb4bc6be27f2e11117cfe0d9729daf29fa
 import TESTfunctions as test
 from PIL import Image, ImageTk
 def read_signals(file_path):
@@ -247,19 +243,6 @@ def on_quantize_signal_button_click():
 
     def on_quantize():
         levels = int(type_entry.get())
-<<<<<<< HEAD
-        if quant_type.get() == "Bits":
-            levels = 2 ** int(type_entry.get())
-        quantized_values = quantize_signal(levels)
-
-
-    tk.Button(window, text = "Generate", command = on_quantize).grid(row = 2, column = 1, padx = 10, pady = 5)
-    #QuanTest1.QuantizationTest1("Quan1_input.txt", quantized_values, )
-
-def quantize_signal(levels):
-
-    index, values = read_signals("Quan2_input.txt")
-=======
         s=quant_type.get()
         if quant_type.get() == "Bits":
             levels = 2 ** int(type_entry.get())
@@ -278,106 +261,11 @@ def quantize_signal(levels,s):
         values =signal[1]
 
     encoded_signal=[]
->>>>>>> 59bcdbdb4bc6be27f2e11117cfe0d9729daf29fa
     minx = min(values)
     maxx = max(values)
     #levels = simpledialog.askinteger("Input", "Enter number of levels:")
     delta = (maxx - minx) / levels
 
-<<<<<<< HEAD
-
-    ranges = [[]]
-    ranges.insert(0, [minx, minx + delta])
-    #if levels is not None:
-    for i in range(levels - 1):
-        ranges.insert(i + 1, [ranges[i][1], ranges[i][1] + delta])
-
-
-    print(ranges)
-    points = []
-    for sub in ranges:
-        if sub:
-            points.append((sub[0] + sub[1]) / 2)
-
-    print(points)
-    quantized = []
-    for e in values:
-        i = 0
-        for sub in ranges:
-            if sub:
-                if sub[0] <= e <= sub[1]:
-                    quantized.append(round(points[i], 2))
-                i+=1
-    print(quantized)
-    return quantized
-
-
-def on_compute_average_button_click():
-    window = tk.Toplevel()
-    window.title("Compute Signal Average")
-    window.geometry("450x300")
-    tk.Label(window, text="Window Size", fg="#003366", font = ("Helvetica", 10)).grid(row=0, column=0, padx=10, pady=5)
-    window_size = tk.Entry(window)
-    window_size.grid(row=0, column=1, padx=10, pady=5)
-    def on_average():
-        windows = int(window_size.get())
-        average_signal(windows)
-    tk.Button(window, text='Average', fg="#003366", font = ("Helvetica", 10), command=on_average).grid(row=1, column=1, padx=15, pady=5)
-
-
-def average_signal(window_size):
-    indices, values = read_signals("Moving Average testcases/MovingAvg_input.txt")
-    new_indicis = []
-    new_values = []
-    new_index = 0
-    for i in range(len(indices) - window_size + 1):
-        sum = 0
-        for j in range(i, i+window_size):
-            if j < len(values):
-                sum += values[j]
-                #print(j, "\t", values[j])
-        avg = round(sum/window_size, 2)
-        new_indicis.append(new_index)
-        new_values.append(avg)
-        new_index += 1
-
-    print(new_indicis)
-    print(new_values)
-
-    if window_size == 3:
-        CompareSignal.CompareSignal('Moving Average testcases/MovingAvg_out1.txt', new_values)
-    else:
-        CompareSignal.CompareSignal('Moving Average testcases/MovingAvg_out2.txt', new_values)
-
-    plot_signal(new_indicis, new_values, 0, 0, 'Average Signal', '', '')
-
-
-def on_sharpening_button_click():
-    indices, values = read_signals("Derivative testcases/Derivative_input.txt")
-    first_derivative = []
-    sec_derivative = []
-    for i in range(1, len(indices)):
-
-        first_derivative.append(values[i] - (0 if i == 0 else values[i - 1]))
-        sec_derivative.append(0 if i == len(values) - 1 else (values[i+1] - (2 * values[i]) + (0 if i == 0 else values[i - 1])))
-
-    sec_derivative.pop()
-
-    f_indices = indices.copy()
-    f_indices.pop()
-    s_indices = f_indices.copy()
-    s_indices.pop()
-
-    CompareSignal.CompareSignal('Derivative testcases/1st_derivative_out.txt', first_derivative)
-    CompareSignal.CompareSignal('Derivative testcases/2nd_derivative_out.txt', sec_derivative)
-
-    plot_signal(f_indices, first_derivative, s_indices, sec_derivative, 'Sharpening Signal', 'First Derivative Signal', 'Second Derivative Signal')
-
-    print(indices)
-    print(first_derivative)
-    print(sec_derivative)
-
-=======
     ranges = []
     interval_indices=[]
 
@@ -457,7 +345,75 @@ def on_sharpening_button_click():
         qt1.QuantizationTest1('Quan1_Out.txt',encoded_signal,quantized)
     else:
         qt2.QuantizationTest2('Quan2_Out.txt', interval_indices, encoded_signal, quantized, quantization_error)
->>>>>>> 59bcdbdb4bc6be27f2e11117cfe0d9729daf29fa
+
+
+
+def on_compute_average_button_click():
+    window = tk.Toplevel()
+    window.title("Compute Signal Average")
+    window.geometry("450x300")
+    tk.Label(window, text="Window Size", fg="#003366", font = ("Helvetica", 10)).grid(row=0, column=0, padx=10, pady=5)
+    window_size = tk.Entry(window)
+    window_size.grid(row=0, column=1, padx=10, pady=5)
+    def on_average():
+        windows = int(window_size.get())
+        average_signal(windows)
+    tk.Button(window, text='Average', fg="#003366", font = ("Helvetica", 10), command=on_average).grid(row=1, column=1, padx=15, pady=5)
+
+
+def average_signal(window_size):
+    indices, values = read_signals("Moving Average testcases/MovingAvg_input.txt")
+    new_indicis = []
+    new_values = []
+    new_index = 0
+    for i in range(len(indices) - window_size + 1):
+        sum = 0
+        for j in range(i, i+window_size):
+            if j < len(values):
+                sum += values[j]
+                #print(j, "\t", values[j])
+        avg = round(sum/window_size, 2)
+        new_indicis.append(new_index)
+        new_values.append(avg)
+        new_index += 1
+
+    print(new_indicis)
+    print(new_values)
+
+    if window_size == 3:
+        CompareSignal.CompareSignal('Moving Average testcases/MovingAvg_out1.txt', new_values)
+    else:
+        CompareSignal.CompareSignal('Moving Average testcases/MovingAvg_out2.txt', new_values)
+
+    plot_signal(new_indicis, new_values, 0, 0, 'Average Signal', '', '')
+
+
+def on_sharpening_button_click():
+    indices, values = read_signals("Derivative testcases/Derivative_input.txt")
+    first_derivative = []
+    sec_derivative = []
+    for i in range(1, len(indices)):
+
+        first_derivative.append(values[i] - (0 if i == 0 else values[i - 1]))
+        sec_derivative.append(0 if i == len(values) - 1 else (values[i+1] - (2 * values[i]) + (0 if i == 0 else values[i - 1])))
+
+    sec_derivative.pop()
+
+    f_indices = indices.copy()
+    f_indices.pop()
+    s_indices = f_indices.copy()
+    s_indices.pop()
+
+    CompareSignal.CompareSignal('Derivative testcases/1st_derivative_out.txt', first_derivative)
+    CompareSignal.CompareSignal('Derivative testcases/2nd_derivative_out.txt', sec_derivative)
+
+    plot_signal(f_indices, first_derivative, s_indices, sec_derivative, 'Sharpening Signal', 'First Derivative Signal', 'Second Derivative Signal')
+
+    print(indices)
+    print(first_derivative)
+    print(sec_derivative)
+
+
 
 
 # GUI
@@ -511,7 +467,6 @@ delay_advancing_signal1_button.place(relx=0.5, rely=0.4, anchor='w')
 
 generate_signal_button = tk.Button(root, text="Generate Signal", command=on_generate_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
 generate_signal_button.place(relx=0.5, rely=0.47, anchor='w')
-<<<<<<< HEAD
 
 quantize_button = tk.Button(root, text="Quantize Signal", command=on_quantize_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
 quantize_button.place(relx=0.48, rely=0.47, anchor='e')
@@ -521,9 +476,5 @@ compute_average_button.place(relx=0.48, rely=0.54, anchor='e')
 
 sharpening_button = tk.Button(root, text="Sharpen Signal", command=on_sharpening_button_click, width=20, height=2, bg='lightgrey', relief='flat')
 sharpening_button.place(relx=0.5, rely=0.54, anchor='w')
-=======
->>>>>>> 59bcdbdb4bc6be27f2e11117cfe0d9729daf29fa
 
-quantize_button = tk.Button(root, text="Quantize Signal", command=on_quantize_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-quantize_button.place(relx=0.48, rely=0.47, anchor='e')
 root.mainloop()

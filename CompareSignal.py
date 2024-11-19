@@ -1,3 +1,6 @@
+import tkinter as tk
+from tkinter import messagebox
+
 def CompareSignal(file_name, YourValues):
     expectedValues = []
     expectedQuantizedValues = []
@@ -19,7 +22,9 @@ def CompareSignal(file_name, YourValues):
             else:
                 break
     if len(YourValues) != len(expectedValues):
-        print("Test case failed, your signal have different length from the expected one")
+        messagebox.showerror("Test Case Failed",
+                             " Test case failed, your signal has a different length from the expected one.")
+
         return
     # for i in range(len(YourValues)):
     #     if YourValues[i] != expectedValues[i]:
@@ -29,7 +34,7 @@ def CompareSignal(file_name, YourValues):
         if abs(YourValues[i] - expectedValues[i]) < 0.01:
             continue
         else:
-            print(
-                "Test case failed, your QuantizedValues have different values from the expected one")
+            messagebox.showerror("Test Case Failed",
+                                 " Test case failed, your Values are different from the expected one.")
             return
-    print("Test case passed successfully")
+    messagebox.showinfo("Test Case Passed", " Test case passed successfully.")
