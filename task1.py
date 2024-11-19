@@ -5,6 +5,7 @@ from tkinter import messagebox
 import numpy as np
 import matplotlib.pyplot as plt
 
+import CompareSignal
 import QuanTest1
 import TESTfunctions as test
 from PIL import Image, ImageTk
@@ -250,7 +251,7 @@ def on_quantize_signal_button_click():
 
 def quantize_signal(levels):
 
-    index, values = read_signals("Quan1_input.txt")
+    index, values = read_signals("Quan2_input.txt")
     minx = min(values)
     maxx = max(values)
     #levels = simpledialog.askinteger("Input", "Enter number of levels:")
@@ -258,28 +259,96 @@ def quantize_signal(levels):
 
 
     ranges = [[]]
-    ranges.insert(0, [values[0], values[0] + delta])
+    ranges.insert(0, [minx, minx + delta])
     #if levels is not None:
     for i in range(levels - 1):
         ranges.insert(i + 1, [ranges[i][1], ranges[i][1] + delta])
 
 
+    print(ranges)
     points = []
     for sub in ranges:
         if sub:
             points.append((sub[0] + sub[1]) / 2)
 
-
+    print(points)
     quantized = []
     for e in values:
         i = 0
         for sub in ranges:
             if sub:
                 if sub[0] <= e <= sub[1]:
-                    quantized.append(points[i])
+                    quantized.append(round(points[i], 2))
                 i+=1
-    #print(quantized)
+    print(quantized)
     return quantized
+
+
+def on_compute_average_button_click():
+    window = tk.Toplevel()
+    window.title("Compute Signal Average")
+    window.geometry("450x300")
+    tk.Label(window, text="Window Size", fg="#003366", font = ("Helvetica", 10)).grid(row=0, column=0, padx=10, pady=5)
+    window_size = tk.Entry(window)
+    window_size.grid(row=0, column=1, padx=10, pady=5)
+    def on_average():
+        windows = int(window_size.get())
+        average_signal(windows)
+    tk.Button(window, text='Average', fg="#003366", font = ("Helvetica", 10), command=on_average).grid(row=1, column=1, padx=15, pady=5)
+
+
+def average_signal(window_size):
+    indices, values = read_signals("Moving Average testcases/MovingAvg_input.txt")
+    new_indicis = []
+    new_values = []
+    new_index = 0
+    for i in range(len(indices) - window_size + 1):
+        sum = 0
+        for j in range(i, i+window_size):
+            if j < len(values):
+                sum += values[j]
+                #print(j, "\t", values[j])
+        avg = round(sum/window_size, 2)
+        new_indicis.append(new_index)
+        new_values.append(avg)
+        new_index += 1
+
+    print(new_indicis)
+    print(new_values)
+
+    if window_size == 3:
+        CompareSignal.CompareSignal('Moving Average testcases/MovingAvg_out1.txt', new_values)
+    else:
+        CompareSignal.CompareSignal('Moving Average testcases/MovingAvg_out2.txt', new_values)
+
+    plot_signal(new_indicis, new_values, 0, 0, 'Average Signal', '', '')
+
+
+def on_sharpening_button_click():
+    indices, values = read_signals("Derivative testcases/Derivative_input.txt")
+    first_derivative = []
+    sec_derivative = []
+    for i in range(1, len(indices)):
+
+        first_derivative.append(values[i] - (0 if i == 0 else values[i - 1]))
+        sec_derivative.append(0 if i == len(values) - 1 else (values[i+1] - (2 * values[i]) + (0 if i == 0 else values[i - 1])))
+
+    sec_derivative.pop()
+
+    f_indices = indices.copy()
+    f_indices.pop()
+    s_indices = f_indices.copy()
+    s_indices.pop()
+
+    CompareSignal.CompareSignal('Derivative testcases/1st_derivative_out.txt', first_derivative)
+    CompareSignal.CompareSignal('Derivative testcases/2nd_derivative_out.txt', sec_derivative)
+
+    plot_signal(f_indices, first_derivative, s_indices, sec_derivative, 'Sharpening Signal', 'First Derivative Signal', 'Second Derivative Signal')
+
+    print(indices)
+    print(first_derivative)
+    print(sec_derivative)
+
 
 
 # GUI
@@ -302,43 +371,46 @@ title_label.place(relx=0.5, rely=0.04, anchor='center')  # Center the title labe
 
 # Buttons
 signal1_button = tk.Button(root, text="Read Signal 1", command=on_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-signal1_button.place(relx=0.5, rely=0.12, anchor='center')
-#signal1_button.grid(row=0, column=0, padx=10, pady=5)
+signal1_button.place(relx=0.48, rely=0.12, anchor='e')
 
 displaysignal1_button = tk.Button(root, text="Display Signal 1", command=on_displaysignal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-displaysignal1_button.place(relx=0.5, rely=0.19, anchor='center')
-#displaysignal1_button.grid(row=0, column=0, padx=10, pady=5)
+displaysignal1_button.place(relx=0.48, rely=0.19, anchor='e')
 
 signal2_button = tk.Button(root, text="Read Signal 2", command=on_signal2_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-signal2_button.place(relx=0.5, rely=0.26, anchor='center')
+signal2_button.place(relx=0.48, rely=0.26, anchor='e')
 
 displaysignal2_button = tk.Button(root, text="Display Signal 2", command=on_displaysignal2_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-displaysignal2_button.place(relx=0.5, rely=0.33, anchor='center')
+displaysignal2_button.place(relx=0.48, rely=0.33, anchor='e')
 
 displaybothsignal_button = tk.Button(root, text="Display Both Signals", command=on_displaybothsignals_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-displaybothsignal_button.place(relx=0.5, rely=0.4, anchor='center')
+displaybothsignal_button.place(relx=0.48, rely=0.4, anchor='e')
 
 
 add_signals_button = tk.Button(root, text="Add Signals", command=on_add_signals_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-add_signals_button.place(relx=0.5, rely=0.47, anchor='center')
+add_signals_button.place(relx=0.5, rely=0.12, anchor='w')
 
 sub_signals_button = tk.Button(root, text="Subtract Signals", command=on_sub_signals_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-sub_signals_button.place(relx=0.5, rely=0.54, anchor='center')
+sub_signals_button.place(relx=0.5, rely=0.19, anchor='w')
 
 multiply_signal1_button = tk.Button(root, text="Multiply Signal", command=on_multiply_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-multiply_signal1_button.place(relx=0.5, rely=0.61, anchor='center')
+multiply_signal1_button.place(relx=0.5, rely=0.26, anchor='w')
 
 fold_signal1_button = tk.Button(root, text="Fold Signal", command=on_fold_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-fold_signal1_button.place(relx=0.5, rely=0.68, anchor='center')
+fold_signal1_button.place(relx=0.5, rely=0.33, anchor='w')
 
 delay_advancing_signal1_button = tk.Button(root, text="Delay/Advance Signal", command=on_delay_advancing_signal1_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-delay_advancing_signal1_button.place(relx=0.5, rely=0.75, anchor='center')
+delay_advancing_signal1_button.place(relx=0.5, rely=0.4, anchor='w')
 
 generate_signal_button = tk.Button(root, text="Generate Signal", command=on_generate_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-generate_signal_button.place(relx=0.5, rely=0.82, anchor='center')
+generate_signal_button.place(relx=0.5, rely=0.47, anchor='w')
 
-quantize_signal_button = tk.Button(root, text="Quantize Signal", command=on_quantize_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
-#quantize_signal.grid(row=0, column=0, padx=50, pady=100)
-quantize_signal_button.place(relx=0.5, rely=0.89, anchor='center')
+quantize_button = tk.Button(root, text="Quantize Signal", command=on_quantize_signal_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+quantize_button.place(relx=0.48, rely=0.47, anchor='e')
+
+compute_average_button = tk.Button(root, text="Compute Signal Average", command=on_compute_average_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+compute_average_button.place(relx=0.48, rely=0.54, anchor='e')
+
+sharpening_button = tk.Button(root, text="Sharpen Signal", command=on_sharpening_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+sharpening_button.place(relx=0.5, rely=0.54, anchor='w')
 
 root.mainloop()
