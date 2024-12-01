@@ -11,6 +11,8 @@ import QuanTest1 as qt1
 import QuanTest2 as qt2
 import TESTfunctions as test
 from PIL import Image, ImageTk
+import signalcompare as sc
+import math
 
 
 def read_signals(file_path):
@@ -482,8 +484,138 @@ def on_sharpening_button_click():
     print(sec_derivative)
 
 
+def read_output(file_path):
+    amplitudeout = []
+    phaseout = []
+    with open(file_path, 'r') as file:
+        lines = file.readlines()[3:]  # Skip the first 3 lines
+        for line in lines:
+            data = line.strip().split()
+            if len(data) == 2:
+                # Extract amplitude and phase values from the signal file
+                value, phase_val = data
+                value = value[:-1] if value.endswith('f') else value  # Remove the trailing 'f'
+                value = float(value)
+                phase_val = phase_val[:-1] if phase_val.endswith('f') else phase_val  # Remove the trailing 'f'
+                phase_val = float(phase_val)
+                # Append the values to the lists
+                amplitudeout.append(value)
+                phaseout.append(phase_val)
+    return amplitudeout,phaseout
+
+
+def DFT():
+
+    samplingFreq = simpledialog.askfloat("Input", "Enter the sampling frequency in HZ:")
+    indices, values = read_signals('Test Cases/DFT/input_Signal_DFT.txt')
+    amplitudeout,phaseout=read_output('Test Cases/DFT/Output_Signal_DFT_A,Phase.txt')
+
+    # Formula: X[k] = sum(n=0 to N-1) x[n] * exp(-j * 2 * pi * k * n / N)
+    N = len(values)
+    X = np.zeros(N, dtype=complex)
+
+    for k in range(N):
+        for n in range(N):
+            X[k]+=values[n]*np.exp(-1j * 2 * np.pi * k * n / N)
+
+    frequencies = np.arange(N) * samplingFreq / N
+
+    amplitude = np.abs(X)
+    phase = np.angle(X)
+
+    Amp=sc.SignalComapreAmplitude(amplitude,amplitudeout)
+    Phase=sc.SignalComaprePhaseShift(phase,phaseout)
+
+    if Amp and Phase:
+        messagebox.showinfo("Passed","Amplitude and Phase values match in the two files.")
+    else:
+        messagebox.showerror("Failed","Amplitude and/or Phase values don't match in the two files.")
+
+    # Plot Frequency vs Amplitude
+    plt.figure(figsize=(12, 6))
+
+    # Amplitude plot
+    plt.subplot(1, 2, 1)
+    plt.stem(frequencies, amplitude)
+    plt.title("Frequency vs Amplitude")
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("Amplitude")
+    plt.grid()
+
+    # Phase plot
+    plt.subplot(1, 2, 2)
+    plt.stem(frequencies, phase)
+    plt.title("Frequency vs Phase")
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("Phase (radians)")
+    plt.grid()
+
+    plt.tight_layout()
+    plt.show()
+    print(X)
+
+
 def on_convolution_button_click():
     Conv_Signals()
+
+
+
+
+def on_dft_button_click():
+    DFT()
+
+def on_idft_button_click():
+    idft_signal()
+
+
+def idft_signal():
+    amp, phase = read_output('Test Cases/IDFT/Input_Signal_IDFT_A,Phase.txt')
+
+    # X = []
+    # for a, p in zip(amp, phase):
+    #     temp = a * (np.cos(p) + 1j * np.sin(p)) if p >= 0 else a * (np.cos(p) - 1j * np.sin(p))
+    #     X.append(temp)
+
+    X = amp * (np.cos(phase) + 1j * np.sin(phase))
+
+    N = len(X)
+    #inv_X = np.zeros(N)
+    inv_X = [0 + 0j] * N  # Initialize the output sequence as complex numbers
+    # X(n) = inv(X(k)) = 1/N sum(X(k) * (e ** j*k*2*pi*n/N))   / e**jtheta = cos(theta) + jsin(theta)
+    indices = []
+    for n in range(N):
+        indices.append(n)
+        for k in range(N):
+            inv_X[n] += X[k] * np.exp(1j * 2 * np.pi * k * n / N)
+            # angle = k * 2 * np.pi * n / N
+            # if angle >= 0:
+            #     inv_X[n] += X[k] * (math.cos(angle) + 1j * math.sin(angle))
+            # else:
+            #     inv_X[n] += X[k] * (math.cos(angle) - 1j * math.sin(angle))
+        inv_X[n] /= N
+
+    real_inv_X = [round(value.real) for value in inv_X]  # Keep real parts and round
+
+    X2 = amp * (np.cos(phase) + 1j * np.sin(phase))
+    inv_X_valid = np.fft.ifft(X2).real
+
+    print(indices)
+    print('inv_X complex:', inv_X)
+    print('inv_X:', real_inv_X)
+    print('inv_x_valid: ', inv_X_valid)
+
+    indices_valid, inv_valid = read_signals('Test Cases/IDFT/Output_Signal_IDFT.txt')
+    indx = sc.SignalComapreAmplitude(indices, indices_valid)
+    inv = sc.SignalComaprePhaseShift(inv_X, inv_valid)
+
+    if indx and inv:
+        messagebox.showinfo("Passed", "Indices and Inverse values match in the two files.")
+    else:
+        messagebox.showerror("Failed", "Indices and/or Inverse values don't match in the two files.")
+
+    plot_signal(indices, real_inv_X, 0, 0, 'Fourier Transformation', 'IDFT', '')
+
+
 
 
 # GUI
@@ -566,4 +698,11 @@ sharpening_button.place(relx = 0.5, rely = 0.54, anchor = 'w')
 conv_button = tk.Button(root, text="Convolve Signals", command=on_convolution_button_click, width=20, height=2, bg='lightgrey', relief='flat')
 conv_button.place(relx=0.48, rely=0.61, anchor='e')
 
+dft_button = tk.Button(root, text="DFT", command=on_dft_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+dft_button.place(relx=0.5, rely=0.61, anchor='w')
+
+idft_button = tk.Button(root, text="IDFT", command=on_idft_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+idft_button.place(relx=0.48, rely=0.68, anchor='e')
+
 root.mainloop()
+
