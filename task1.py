@@ -11,6 +11,7 @@ import QuanTest1 as qt1
 import QuanTest2 as qt2
 import TESTfunctions as test
 from PIL import Image, ImageTk
+import  signalcompare as sc
 def read_signals(file_path):
     indices = []
     values = []
@@ -444,10 +445,78 @@ def on_sharpening_button_click():
     print(indices)
     print(first_derivative)
     print(sec_derivative)
+def read_output():
+    amplitudeout = []
+    phaseout = []
+    with open('Test Cases/DFT/Output_Signal_DFT_A,Phase.txt', 'r') as file:
+        lines = file.readlines()[3:]  # Skip the first 3 lines
+        for line in lines:
+            data = line.strip().split()
+            if len(data) == 2:
+                # Extract amplitude and phase values from the signal file
+                value, phase_val = data
+                value = value[:-1] if value.endswith('f') else value  # Remove the trailing 'f'
+                value = float(value)
+                phase_val = phase_val[:-1] if phase_val.endswith('f') else phase_val  # Remove the trailing 'f'
+                phase_val = float(phase_val)
+                # Append the values to the lists
+                amplitudeout.append(value)
+                phaseout.append(phase_val)
+    return amplitudeout,phaseout
+def DFT():
+
+    samplingFreq = simpledialog.askfloat("Input", "Enter the sampling frequency in HZ:")
+    indices, values = read_signals('Test Cases/DFT/input_Signal_DFT.txt')
+    amplitudeout,phaseout=read_output()
+
+    # Formula: X[k] = sum(n=0 to N-1) x[n] * exp(-j * 2 * pi * k * n / N)
+    N = len(values)
+    X = np.zeros(N, dtype=complex)
+
+    for k in range(N):
+        for n in range(N):
+            X[k]+=values[n]*np.exp(-1j * 2 * np.pi * k * n / N)
+
+    frequencies = np.arange(N) * samplingFreq / N
+
+    amplitude = np.abs(X)
+    phase = np.angle(X)
+
+    Amp=sc.SignalComapreAmplitude(amplitude,amplitudeout)
+    Phase=sc.SignalComaprePhaseShift(phase,phaseout)
+
+    if Amp and Phase:
+        messagebox.showinfo("Passed","Amplitude and Phase values match in the two files.")
+    else:
+        messagebox.showerror("Failed","Amplitude and/or Phase values don't match in the two files.")
+
+    # Plot Frequency vs Amplitude
+    plt.figure(figsize=(12, 6))
+
+    # Amplitude plot
+    plt.subplot(1, 2, 1)
+    plt.stem(frequencies, amplitude)
+    plt.title("Frequency vs Amplitude")
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("Amplitude")
+    plt.grid()
+
+    # Phase plot
+    plt.subplot(1, 2, 2)
+    plt.stem(frequencies, phase)
+    plt.title("Frequency vs Phase")
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("Phase (radians)")
+    plt.grid()
+
+    plt.tight_layout()
+    plt.show()
 
 def on_convolution_button_click():
     Conv_Signals()
 
+def on_dft_button_click():
+    DFT()
 # GUI
 root = tk.Tk()
 root.title("DSP")
@@ -511,5 +580,8 @@ sharpening_button.place(relx=0.5, rely=0.54, anchor='w')
 
 conv_button = tk.Button(root, text="Convolve Signals", command=on_convolution_button_click, width=20, height=2, bg='lightgrey', relief='flat')
 conv_button.place(relx=0.48, rely=0.61, anchor='e')
+
+dft_button = tk.Button(root, text="DFT", command=on_dft_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+dft_button.place(relx=0.5, rely=0.61, anchor='w')
 
 root.mainloop()
