@@ -416,12 +416,43 @@ def average_signal(window_size):
     print(new_values)
 
     if window_size == 3:
-        CompareSignal.CompareSignal('Moving Average testcases/MovingAvg_out1.txt', new_values)
+        CompareSignal.CompareSignal('Moving Average testcases/MovingAvg_out1.txt',new_indicis ,new_values)
+
     else:
-        CompareSignal.CompareSignal('Moving Average testcases/MovingAvg_out2.txt', new_values)
+        CompareSignal.CompareSignal('Moving Average testcases/MovingAvg_out2.txt',new_indicis ,new_values)
 
     plot_signal(new_indicis, new_values, 0, 0, 'Average Signal', '', '')
 
+def Conv_Signals():
+    # y(n)=x(n)*h(x)
+    # y(n)=sum [x(k)*h(n-k)]
+    indices1, values1=read_signals('Convolution testcases/Signal 1.txt')
+    indices2, values2=read_signals('Convolution testcases/Signal 2.txt')
+
+    result_indices = []
+    result_values = []
+
+    min_index = indices1[0] + indices2[0]
+    max_index = indices1[-1] + indices2[-1]
+
+    for n in range(min_index, max_index + 1):
+        conv_sum = 0
+        for k in range(len(values1)):
+            index_k = indices1[k]
+            index_h = n - index_k
+            if index_h in indices2:
+                h_index = indices2.index(index_h)
+                conv_sum += values1[k] * values2[h_index]
+        result_indices.append(n)
+        result_values.append(conv_sum)
+    CompareSignal.CompareSignal('Convolution testcases/Conv_output.txt',result_indices,result_values)
+    plt.figure(figsize=(8, 6))
+    plt.stem(result_indices, result_values, linefmt='b-', markerfmt='bo', basefmt='r-')
+    plt.title("Convolved Signal")
+    plt.xlabel("Index")
+    plt.ylabel("Value")
+    plt.grid(True)
+    plt.show()
 
 def on_sharpening_button_click():
     indices, values = read_signals("Derivative testcases/Derivative_input.txt")
@@ -439,8 +470,9 @@ def on_sharpening_button_click():
     s_indices = f_indices.copy()
     s_indices.pop()
 
-    CompareSignal.CompareSignal('Derivative testcases/1st_derivative_out.txt', first_derivative)
-    CompareSignal.CompareSignal('Derivative testcases/2nd_derivative_out.txt', sec_derivative)
+    CompareSignal.CompareSignal('Derivative testcases/1st_derivative_out.txt',f_indices ,first_derivative)
+    CompareSignal.CompareSignal('Derivative testcases/2nd_derivative_out.txt',s_indices ,sec_derivative)
+
 
     plot_signal(f_indices, first_derivative, s_indices, sec_derivative, 'Sharpening Signal', 'First Derivative Signal',
                 'Second Derivative Signal')
@@ -448,6 +480,10 @@ def on_sharpening_button_click():
     print(indices)
     print(first_derivative)
     print(sec_derivative)
+
+
+def on_convolution_button_click():
+    Conv_Signals()
 
 
 # GUI
@@ -523,5 +559,11 @@ compute_average_button.place(relx = 0.48, rely = 0.54, anchor = 'e')
 sharpening_button = tk.Button(root, text = "Sharpen Signal", command = on_sharpening_button_click, width = 20,
                               height = 2, bg = 'lightgrey', relief = 'flat')
 sharpening_button.place(relx = 0.5, rely = 0.54, anchor = 'w')
+
+# sharpening_button = tk.Button(root, text="Sharpen Signal", command=on_sharpening_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+# sharpening_button.place(relx=0.5, rely=0.54, anchor='w')
+
+conv_button = tk.Button(root, text="Convolve Signals", command=on_convolution_button_click, width=20, height=2, bg='lightgrey', relief='flat')
+conv_button.place(relx=0.48, rely=0.61, anchor='e')
 
 root.mainloop()
