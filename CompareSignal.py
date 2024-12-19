@@ -28,14 +28,14 @@ def CompareSignal(file_name, Your_EncodedValues, Your_Values):
         if(Your_EncodedValues[i]!=expectedIndices[i]):
 
             messagebox.showerror("Test Case Failed",
-                                 " Test case failed, your Values are different from the expected one.")
+                                 " Test case failed, your signal have different indices from the expected one.")
             return
     for i in range(len(expectedValues)):
         if abs(Your_Values[i] - expectedValues[i]) < 0.01:
             continue
         else:
             messagebox.showerror("Test Case Failed",
-                                 "Test case failed, your Values have different values from the expected one.")
+                                 "Test case failed, your signal have different values from the expected one.")
             return
     messagebox.showinfo("Test Case Passed", " Test case passed successfully.")
 
